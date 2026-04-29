@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import ru.mirea.shylit.studydeadline.app.plugins.configureRouting
+import ru.mirea.shylit.studydeadline.app.plugins.configureSerialization
 
 fun main() {
     embeddedServer(
@@ -15,5 +16,6 @@ fun main() {
 }
 
 fun Application.module() {
+    configureSerialization()
     configureRouting()
 }

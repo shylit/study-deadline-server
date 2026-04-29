@@ -20,6 +20,9 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     testImplementation(kotlin("test"))
+
+    implementation("io.ktor:ktor-server-content-negotiation:${ktorVersion}")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:${ktorVersion}")
 }
 
 application {
