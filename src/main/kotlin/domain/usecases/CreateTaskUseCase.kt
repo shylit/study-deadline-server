@@ -2,6 +2,7 @@ package ru.mirea.shylit.studydeadline.domain.usecases
 
 import ru.mirea.shylit.studydeadline.domain.models.Task
 import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
+import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 
 class CreateTaskUseCase(
@@ -12,14 +13,16 @@ class CreateTaskUseCase(
         description: String,
         subject: String,
         deadline: String,
-        priority: TaskPriority
+        priority: TaskPriority,
+        type: TaskType
     ): Task {
         return taskRepository.createTask(
             title = title,
             description = description,
             subject = subject,
             deadline = deadline,
-            priority = priority
+            priority = priority,
+            type = type
         )
     }
 }

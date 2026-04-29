@@ -6,6 +6,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ru.mirea.shylit.studydeadline.domain.models.Task
 import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
+import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
@@ -28,12 +29,17 @@ fun Route.taskRoutes(
                 TaskPriority.valueOf(request.priority.uppercase())
             }.getOrDefault(TaskPriority.MEDIUM)
 
+            val type = runCatching {
+                TaskType.valueOf(request.type.uppercase())
+            }.getOrDefault(TaskType.OTHER)
+
             val task = createTaskUseCase(
                 title = request.title,
                 description = request.description,
                 subject = request.subject,
                 deadline = request.deadline,
-                priority = priority
+                priority = priority,
+                type = type
             )
 
             call.respond(
@@ -52,6 +58,7 @@ private fun Task.toResponse(): TaskResponse {
         subject = subject,
         deadline = deadline,
         status = status.name,
-        priority = priority.name
+        priority = priority.name,
+        type = type.name
     )
 }

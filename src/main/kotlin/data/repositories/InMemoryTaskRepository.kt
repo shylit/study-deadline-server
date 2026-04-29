@@ -3,6 +3,7 @@ package ru.mirea.shylit.studydeadline.data.repositories
 import ru.mirea.shylit.studydeadline.domain.models.Task
 import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
 import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
+import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 
 class InMemoryTaskRepository : TaskRepository {
@@ -15,7 +16,8 @@ class InMemoryTaskRepository : TaskRepository {
             subject = "Разработка клиент-серверных мобильных приложений",
             deadline = "2026-05-05",
             status = TaskStatus.IN_PROGRESS,
-            priority = TaskPriority.HIGH
+            priority = TaskPriority.HIGH,
+            type = TaskType.COURSE_WORK
         ),
         Task(
             id = 2,
@@ -24,7 +26,8 @@ class InMemoryTaskRepository : TaskRepository {
             subject = "Мобильная разработка",
             deadline = "2026-05-10",
             status = TaskStatus.PLANNED,
-            priority = TaskPriority.MEDIUM
+            priority = TaskPriority.MEDIUM,
+            type = TaskType.LAB_WORK
         ),
         Task(
             id = 3,
@@ -33,7 +36,8 @@ class InMemoryTaskRepository : TaskRepository {
             subject = "Клиент-серверные приложения",
             deadline = "2026-05-15",
             status = TaskStatus.COMPLETED,
-            priority = TaskPriority.LOW
+            priority = TaskPriority.LOW,
+            type = TaskType.TEST
         )
     )
 
@@ -44,7 +48,8 @@ class InMemoryTaskRepository : TaskRepository {
         description: String,
         subject: String,
         deadline: String,
-        priority: TaskPriority
+        priority: TaskPriority,
+        type: TaskType
     ): Task {
         val task = Task(
             id = tasks.maxOfOrNull { it.id }?.plus(1) ?: 1,
@@ -53,7 +58,8 @@ class InMemoryTaskRepository : TaskRepository {
             subject = subject,
             deadline = deadline,
             status = TaskStatus.PLANNED,
-            priority = priority
+            priority = priority,
+            type = type
         )
 
         tasks.add(task)

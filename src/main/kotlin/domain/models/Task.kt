@@ -7,5 +7,6 @@ data class Task(
     val subject: String,
     val deadline: String,
     val status: TaskStatus,
-    val priority: TaskPriority
+    val priority: TaskPriority,
+    val type: TaskType
 )
