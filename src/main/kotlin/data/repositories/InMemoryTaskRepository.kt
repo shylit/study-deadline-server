@@ -1,6 +1,8 @@
 package ru.mirea.shylit.studydeadline.data.repositories
 
 import ru.mirea.shylit.studydeadline.domain.models.Task
+import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
+import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
 import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 
 class InMemoryTaskRepository : TaskRepository {
@@ -12,7 +14,8 @@ class InMemoryTaskRepository : TaskRepository {
             description = "Описать предметную область и аналоги приложения",
             subject = "Разработка клиент-серверных мобильных приложений",
             deadline = "2026-05-05",
-            isCompleted = false
+            status = TaskStatus.IN_PROGRESS,
+            priority = TaskPriority.HIGH
         ),
         Task(
             id = 2,
@@ -20,7 +23,8 @@ class InMemoryTaskRepository : TaskRepository {
             description = "Реализовать экран со списком элементов",
             subject = "Мобильная разработка",
             deadline = "2026-05-10",
-            isCompleted = false
+            status = TaskStatus.PLANNED,
+            priority = TaskPriority.MEDIUM
         ),
         Task(
             id = 3,
@@ -28,7 +32,8 @@ class InMemoryTaskRepository : TaskRepository {
             description = "Повторить темы по REST API и базам данных",
             subject = "Клиент-серверные приложения",
             deadline = "2026-05-15",
-            isCompleted = true
+            status = TaskStatus.COMPLETED,
+            priority = TaskPriority.LOW
         )
     )
 
@@ -38,7 +43,8 @@ class InMemoryTaskRepository : TaskRepository {
         title: String,
         description: String,
         subject: String,
-        deadline: String
+        deadline: String,
+        priority: TaskPriority
     ): Task {
         val task = Task(
             id = tasks.maxOfOrNull { it.id }?.plus(1) ?: 1,
@@ -46,7 +52,8 @@ class InMemoryTaskRepository : TaskRepository {
             description = description,
             subject = subject,
             deadline = deadline,
-            isCompleted = false
+            status = TaskStatus.PLANNED,
+            priority = priority
         )
 
         tasks.add(task)

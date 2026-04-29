@@ -7,5 +7,6 @@ data class CreateTaskRequest(
     val title: String,
     val description: String,
     val subject: String,
-    val deadline: String
+    val deadline: String,
+    val priority: String = "MEDIUM"
 )

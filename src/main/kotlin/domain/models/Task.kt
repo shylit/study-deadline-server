@@ -6,5 +6,6 @@ data class Task(
     val description: String,
     val subject: String,
     val deadline: String,
-    val isCompleted: Boolean
+    val status: TaskStatus,
+    val priority: TaskPriority
 )

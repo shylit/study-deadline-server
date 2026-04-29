@@ -9,5 +9,6 @@ data class TaskResponse(
     val description: String,
     val subject: String,
     val deadline: String,
-    val isCompleted: Boolean
+    val status: String,
+    val priority: String
 )
