@@ -5,7 +5,7 @@ import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 
 class InMemoryTaskRepository : TaskRepository {
 
-    private val tasks = listOf(
+    private val tasks = mutableListOf(
         Task(
             id = 1,
             title = "Подготовить главу 1 курсовой",
@@ -33,4 +33,24 @@ class InMemoryTaskRepository : TaskRepository {
     )
 
     override fun getAllTasks(): List<Task> = tasks
+
+    override fun createTask(
+        title: String,
+        description: String,
+        subject: String,
+        deadline: String
+    ): Task {
+        val task = Task(
+            id = tasks.maxOfOrNull { it.id }?.plus(1) ?: 1,
+            title = title,
+            description = description,
+            subject = subject,
+            deadline = deadline,
+            isCompleted = false
+        )
+
+        tasks.add(task)
+
+        return task
+    }
 }
