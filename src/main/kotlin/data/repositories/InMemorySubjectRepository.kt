@@ -5,7 +5,7 @@ import ru.mirea.shylit.studydeadline.domain.repositories.SubjectRepository
 
 class InMemorySubjectRepository : SubjectRepository {
 
-    private val subjects = listOf(
+    private val subjects = mutableListOf(
         Subject(
             id = 1,
             name = "Разработка клиент-серверных мобильных приложений",
@@ -24,4 +24,19 @@ class InMemorySubjectRepository : SubjectRepository {
     )
 
     override fun getAllSubjects(): List<Subject> = subjects
+
+    override fun createSubject(
+        name: String,
+        description: String
+    ): Subject {
+        val subject = Subject(
+            id = subjects.maxOfOrNull { it.id }?.plus(1) ?: 1,
+            name = name,
+            description = description
+        )
+
+        subjects.add(subject)
+
+        return subject
+    }
 }
