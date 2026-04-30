@@ -24,4 +24,9 @@ interface TaskRepository {
         priority: TaskPriority,
         type: TaskType
     ): Task
+
+    fun updateTaskStatus(
+        taskId: Int,
+        status: TaskStatus
+    ): Task?
 }

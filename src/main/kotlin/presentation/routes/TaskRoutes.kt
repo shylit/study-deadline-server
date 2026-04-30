@@ -12,14 +12,17 @@ import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
+import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskStatusRequest
 
 fun Route.taskRoutes(
     getTasksUseCase: GetTasksUseCase,
     createTaskUseCase: CreateTaskUseCase,
     searchTasksUseCase: SearchTasksUseCase,
-    getTasksBySubjectUseCase: GetTasksBySubjectUseCase
+    getTasksBySubjectUseCase: GetTasksBySubjectUseCase,
+    updateTaskStatusUseCase: UpdateTaskStatusUseCase
 ) {
     route("/api/tasks") {
         get {
@@ -89,6 +92,48 @@ fun Route.taskRoutes(
                 status = HttpStatusCode.Created,
                 message = task.toResponse()
             )
+        }
+
+        patch("/{id}/status") {
+
+            val taskId = call.parameters["id"]?.toIntOrNull()
+
+            if (taskId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректный id задания")
+                )
+                return@patch
+            }
+
+            val request = call.receive<UpdateTaskStatusRequest>()
+
+            val status = runCatching {
+                TaskStatus.valueOf(request.status.uppercase())
+            }.getOrNull()
+
+            if (status == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректный статус задания")
+                )
+                return@patch
+            }
+
+            val updatedTask = updateTaskStatusUseCase(
+                taskId = taskId,
+                status = status
+            )
+
+            if (updatedTask == null) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = mapOf("error" to "Задание не найдено")
+                )
+                return@patch
+            }
+
+            call.respond(updatedTask.toResponse())
         }
     }
 }

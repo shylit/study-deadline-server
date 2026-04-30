@@ -90,4 +90,24 @@ class InMemoryTaskRepository : TaskRepository {
             matchesQuery && matchesStatus && matchesPriority
         }
     }
+
+    override fun updateTaskStatus(
+        taskId: Int,
+        status: TaskStatus
+    ): Task? {
+
+        val taskIndex = tasks.indexOfFirst { it.id == taskId }
+
+        if (taskIndex == -1) {
+            return null
+        }
+
+        val updatedTask = tasks[taskIndex].copy(
+            status = status
+        )
+
+        tasks[taskIndex] = updatedTask
+
+        return updatedTask
+    }
 }
