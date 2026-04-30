@@ -7,18 +7,44 @@ import io.ktor.server.routing.*
 import ru.mirea.shylit.studydeadline.domain.models.Task
 import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
 import ru.mirea.shylit.studydeadline.domain.models.TaskType
+import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
 
 fun Route.taskRoutes(
     getTasksUseCase: GetTasksUseCase,
-    createTaskUseCase: CreateTaskUseCase
+    createTaskUseCase: CreateTaskUseCase,
+    searchTasksUseCase: SearchTasksUseCase
 ) {
     route("/api/tasks") {
         get {
-            val tasks = getTasksUseCase()
+            val query = call.request.queryParameters["query"]
+
+            val status = call.request.queryParameters["status"]?.let { value ->
+                runCatching {
+                    TaskStatus.valueOf(value.uppercase())
+                }.getOrNull()
+            }
+
+            val priority = call.request.queryParameters["priority"]?.let { value ->
+                runCatching {
+                    TaskPriority.valueOf(value.uppercase())
+                }.getOrNull()
+            }
+
+            val tasks = if (query.isNullOrBlank() && status == null && priority == null) {
+                getTasksUseCase()
+            } else {
+                searchTasksUseCase(
+                    query = query,
+                    status = status,
+                    priority = priority
+                )
+            }
+
             call.respond(tasks.map { it.toResponse() })
         }
 

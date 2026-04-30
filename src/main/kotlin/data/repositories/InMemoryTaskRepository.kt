@@ -66,4 +66,22 @@ class InMemoryTaskRepository : TaskRepository {
 
         return task
     }
+
+    override fun searchTasks(
+        query: String?,
+        status: TaskStatus?,
+        priority: TaskPriority?
+    ): List<Task> {
+        return tasks.filter { task ->
+            val matchesQuery = query.isNullOrBlank() ||
+                    task.title.contains(query, ignoreCase = true) ||
+                    task.description.contains(query, ignoreCase = true) ||
+                    task.subject.contains(query, ignoreCase = true)
+
+            val matchesStatus = status == null || task.status == status
+            val matchesPriority = priority == null || task.priority == priority
+
+            matchesQuery && matchesStatus && matchesPriority
+        }
+    }
 }
