@@ -7,16 +7,25 @@ import io.ktor.server.routing.*
 import ru.mirea.shylit.studydeadline.domain.models.Subject
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.SearchSubjectsUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
 
 fun Route.subjectRoutes(
     getSubjectsUseCase: GetSubjectsUseCase,
-    createSubjectUseCase: CreateSubjectUseCase
+    createSubjectUseCase: CreateSubjectUseCase,
+    searchSubjectsUseCase: SearchSubjectsUseCase
 ) {
     route("/api/subjects") {
         get {
-            val subjects = getSubjectsUseCase()
+            val query = call.request.queryParameters["query"]
+
+            val subjects = if (query.isNullOrBlank()) {
+                getSubjectsUseCase()
+            } else {
+                searchSubjectsUseCase(query)
+            }
+
             call.respond(subjects.map { it.toResponse() })
         }
 

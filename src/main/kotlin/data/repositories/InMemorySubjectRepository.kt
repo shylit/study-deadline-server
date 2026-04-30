@@ -25,6 +25,14 @@ class InMemorySubjectRepository : SubjectRepository {
 
     override fun getAllSubjects(): List<Subject> = subjects
 
+    override fun searchSubjects(query: String?): List<Subject> {
+        return subjects.filter { subject ->
+            query.isNullOrBlank() ||
+                    subject.name.contains(query, ignoreCase = true) ||
+                    subject.description.contains(query, ignoreCase = true)
+        }
+    }
+
     override fun createSubject(
         name: String,
         description: String
