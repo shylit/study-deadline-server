@@ -8,6 +8,8 @@ import ru.mirea.shylit.studydeadline.domain.models.TaskType
 interface TaskRepository {
     fun getAllTasks(): List<Task>
 
+    fun getTasksBySubject(subject: String): List<Task>
+
     fun searchTasks(
         query: String?,
         status: TaskStatus?,

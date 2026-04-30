@@ -43,6 +43,12 @@ class InMemoryTaskRepository : TaskRepository {
 
     override fun getAllTasks(): List<Task> = tasks
 
+    override fun getTasksBySubject(subject: String): List<Task> {
+        return tasks.filter { task ->
+            task.subject.equals(subject, ignoreCase = true)
+        }
+    }
+
     override fun createTask(
         title: String,
         description: String,

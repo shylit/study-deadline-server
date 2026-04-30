@@ -11,13 +11,15 @@ import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
 
 fun Route.taskRoutes(
     getTasksUseCase: GetTasksUseCase,
     createTaskUseCase: CreateTaskUseCase,
-    searchTasksUseCase: SearchTasksUseCase
+    searchTasksUseCase: SearchTasksUseCase,
+    getTasksBySubjectUseCase: GetTasksBySubjectUseCase
 ) {
     route("/api/tasks") {
         get {
@@ -45,6 +47,21 @@ fun Route.taskRoutes(
                 )
             }
 
+            call.respond(tasks.map { it.toResponse() })
+        }
+
+        get("/by-subject") {
+            val subject = call.request.queryParameters["subject"]
+
+            if (subject.isNullOrBlank()) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Не указан параметр subject")
+                )
+                return@get
+            }
+
+            val tasks = getTasksBySubjectUseCase(subject)
             call.respond(tasks.map { it.toResponse() })
         }
 
