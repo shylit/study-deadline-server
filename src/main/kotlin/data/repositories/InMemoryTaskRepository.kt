@@ -161,4 +161,8 @@ class InMemoryTaskRepository : TaskRepository {
             task.deadline in startDate..endDate
         }
     }
+
+    override fun getTaskById(taskId: Int): Task? {
+        return tasks.find { it.id == taskId }
+    }
 }

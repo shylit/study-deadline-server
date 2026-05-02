@@ -19,6 +19,7 @@ import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForTodayUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForWeekUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateTaskUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTaskByIdUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
@@ -35,7 +36,8 @@ fun Route.taskRoutes(
     getTasksForWeekUseCase: GetTasksForWeekUseCase,
     getTasksBySubjectUseCase: GetTasksBySubjectUseCase,
     updateTaskStatusUseCase: UpdateTaskStatusUseCase,
-    validateTaskUseCase: ValidateTaskUseCase
+    validateTaskUseCase: ValidateTaskUseCase,
+    getTaskByIdUseCase: GetTaskByIdUseCase
 ) {
     route("/api/tasks") {
         get {
@@ -98,6 +100,30 @@ fun Route.taskRoutes(
             )
 
             call.respond(tasks.map { it.toResponse() })
+        }
+
+        get("/{id}") {
+            val taskId = call.parameters["id"]?.toIntOrNull()
+
+            if (taskId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse("Некорректный id задания")
+                )
+                return@get
+            }
+
+            val task = getTaskByIdUseCase(taskId)
+
+            if (task == null) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = ErrorResponse("Задание не найдено")
+                )
+                return@get
+            }
+
+            call.respond(task.toResponse())
         }
 
         post {

@@ -20,6 +20,7 @@ import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateSubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTaskByIdUseCase
 import ru.mirea.shylit.studydeadline.presentation.routes.healthRoutes
 import ru.mirea.shylit.studydeadline.presentation.routes.subjectRoutes
 import ru.mirea.shylit.studydeadline.presentation.routes.taskRoutes
@@ -36,6 +37,7 @@ fun Application.configureRouting() {
     val getTasksBySubjectUseCase = GetTasksBySubjectUseCase(taskRepository)
     val getTasksForTodayUseCase = GetTasksForTodayUseCase(taskRepository)
     val getTasksForWeekUseCase = GetTasksForWeekUseCase(taskRepository)
+    val getTaskByIdUseCase = GetTaskByIdUseCase(taskRepository)
 
     val validateTaskUseCase = ValidateTaskUseCase()
     val validateSubjectUseCase = ValidateSubjectUseCase()
@@ -60,7 +62,8 @@ fun Application.configureRouting() {
             updateTaskStatusUseCase = updateTaskStatusUseCase,
             getTasksForTodayUseCase = getTasksForTodayUseCase,
             getTasksForWeekUseCase = getTasksForWeekUseCase,
-            validateTaskUseCase = validateTaskUseCase
+            validateTaskUseCase = validateTaskUseCase,
+            getTaskByIdUseCase = getTaskByIdUseCase
         )
         subjectRoutes(
             getSubjectsUseCase = getSubjectsUseCase,

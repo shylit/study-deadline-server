@@ -49,4 +49,6 @@ interface TaskRepository {
         startDate: String,
         endDate: String
     ): List<Task>
+
+    fun getTaskById(taskId: Int): Task?
 }
