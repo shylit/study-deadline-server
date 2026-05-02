@@ -6,6 +6,7 @@ import io.ktor.server.netty.*
 import ru.mirea.shylit.studydeadline.app.plugins.configureRouting
 import ru.mirea.shylit.studydeadline.app.plugins.configureSerialization
 import ru.mirea.shylit.studydeadline.app.plugins.configureCors
+import ru.mirea.shylit.studydeadline.app.plugins.configureStatusPages
 
 fun main() {
     embeddedServer(
@@ -19,5 +20,6 @@ fun main() {
 fun Application.module() {
     configureCors()
     configureSerialization()
+    configureStatusPages()
     configureRouting()
 }
