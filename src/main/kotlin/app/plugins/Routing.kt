@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import ru.mirea.shylit.studydeadline.data.repositories.InMemorySubjectRepository
 import ru.mirea.shylit.studydeadline.data.repositories.InMemoryTaskRepository
+import ru.mirea.shylit.studydeadline.data.repositories.InMemoryUserRepository
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateSubjectUseCase
@@ -22,9 +23,11 @@ import ru.mirea.shylit.studydeadline.domain.usecases.ValidateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTaskByIdUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectByIdUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetCurrentUserUseCase
 import ru.mirea.shylit.studydeadline.presentation.routes.healthRoutes
 import ru.mirea.shylit.studydeadline.presentation.routes.subjectRoutes
 import ru.mirea.shylit.studydeadline.presentation.routes.taskRoutes
+import ru.mirea.shylit.studydeadline.presentation.routes.userRoutes
 
 fun Application.configureRouting() {
     val taskRepository = InMemoryTaskRepository()
@@ -52,6 +55,9 @@ fun Application.configureRouting() {
 
     val updateTaskStatusUseCase = UpdateTaskStatusUseCase(taskRepository)
 
+    val userRepository = InMemoryUserRepository()
+    val getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
+
     routing {
         healthRoutes()
         taskRoutes(
@@ -75,6 +81,9 @@ fun Application.configureRouting() {
             updateSubjectUseCase = updateSubjectUseCase,
             validateSubjectUseCase = validateSubjectUseCase,
             getSubjectByIdUseCase = getSubjectByIdUseCase
+        )
+        userRoutes(
+            getCurrentUserUseCase = getCurrentUserUseCase
         )
     }
 }
