@@ -19,4 +19,6 @@ interface SubjectRepository {
         name: String,
         description: String
     ): Subject?
+
+    fun getSubjectById(subjectId: Int): Subject?
 }

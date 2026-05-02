@@ -12,6 +12,7 @@ import ru.mirea.shylit.studydeadline.domain.usecases.UpdateSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateSubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectByIdUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateSubjectRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
@@ -22,7 +23,8 @@ fun Route.subjectRoutes(
     deleteSubjectUseCase: DeleteSubjectUseCase,
     searchSubjectsUseCase: SearchSubjectsUseCase,
     updateSubjectUseCase: UpdateSubjectUseCase,
-    validateSubjectUseCase: ValidateSubjectUseCase
+    validateSubjectUseCase: ValidateSubjectUseCase,
+    getSubjectByIdUseCase: GetSubjectByIdUseCase
 ) {
     route("/api/subjects") {
         get {
@@ -35,6 +37,30 @@ fun Route.subjectRoutes(
             }
 
             call.respond(subjects.map { it.toResponse() })
+        }
+
+        get("/{id}") {
+            val subjectId = call.parameters["id"]?.toIntOrNull()
+
+            if (subjectId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse("Некорректный id предмета")
+                )
+                return@get
+            }
+
+            val subject = getSubjectByIdUseCase(subjectId)
+
+            if (subject == null) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = ErrorResponse("Предмет не найден")
+                )
+                return@get
+            }
+
+            call.respond(subject.toResponse())
         }
 
         post {

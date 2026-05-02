@@ -73,4 +73,8 @@ class InMemorySubjectRepository : SubjectRepository {
 
         return updatedSubject
     }
+
+    override fun getSubjectById(subjectId: Int): Subject? {
+        return subjects.find { it.id == subjectId }
+    }
 }
