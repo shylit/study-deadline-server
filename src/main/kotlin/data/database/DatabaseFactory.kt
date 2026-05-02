@@ -3,11 +3,25 @@ package ru.mirea.shylit.studydeadline.data.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import ru.mirea.shylit.studydeadline.data.tables.SubjectsTable
+import ru.mirea.shylit.studydeadline.data.tables.TasksTable
+import ru.mirea.shylit.studydeadline.data.tables.UsersTable
 
 object DatabaseFactory {
 
     fun init() {
         Database.connect(hikariDataSource())
+
+        transaction {
+            SchemaUtils.create(
+                UsersTable,
+                SubjectsTable,
+                TasksTable
+            )
+        }
+
         println("Database connection initialized")
     }
 
