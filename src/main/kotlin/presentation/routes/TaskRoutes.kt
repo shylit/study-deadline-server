@@ -22,6 +22,7 @@ import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskStatusRequest
+import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
 
 fun Route.taskRoutes(
     getTasksUseCase: GetTasksUseCase,
@@ -69,7 +70,7 @@ fun Route.taskRoutes(
             if (subject.isNullOrBlank()) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Не указан параметр subject")
+                    message = ErrorResponse("Не указан параметр subject")
                 )
                 return@get
             }
@@ -129,7 +130,7 @@ fun Route.taskRoutes(
             if (taskId == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректный id задания")
+                    message = ErrorResponse("Некорректный id задания")
                 )
                 return@put
             }
@@ -151,7 +152,7 @@ fun Route.taskRoutes(
             if (status == null || priority == null || type == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректные значения статуса, приоритета или типа задания")
+                    message = ErrorResponse("Некорректные значения статуса, приоритета или типа задания")
                 )
                 return@put
             }
@@ -170,7 +171,7 @@ fun Route.taskRoutes(
             if (updatedTask == null) {
                 call.respond(
                     status = HttpStatusCode.NotFound,
-                    message = mapOf("error" to "Задание не найдено")
+                    message = ErrorResponse("Задание не найдено")
                 )
                 return@put
             }
@@ -184,7 +185,7 @@ fun Route.taskRoutes(
             if (taskId == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректный id задания")
+                    message = ErrorResponse("Некорректный id задания")
                 )
                 return@delete
             }
@@ -194,7 +195,7 @@ fun Route.taskRoutes(
             if (!isDeleted) {
                 call.respond(
                     status = HttpStatusCode.NotFound,
-                    message = mapOf("error" to "Задание не найдено")
+                    message = ErrorResponse("Задание не найдено")
                 )
                 return@delete
             }
@@ -212,7 +213,7 @@ fun Route.taskRoutes(
             if (taskId == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректный id задания")
+                    message = ErrorResponse("Некорректный id задания")
                 )
                 return@patch
             }
@@ -226,7 +227,7 @@ fun Route.taskRoutes(
             if (status == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректный статус задания")
+                    message = ErrorResponse("Некорректный статус задания")
                 )
                 return@patch
             }
@@ -239,7 +240,7 @@ fun Route.taskRoutes(
             if (updatedTask == null) {
                 call.respond(
                     status = HttpStatusCode.NotFound,
-                    message = mapOf("error" to "Задание не найдено")
+                    message = ErrorResponse("Задание не найдено")
                 )
                 return@patch
             }

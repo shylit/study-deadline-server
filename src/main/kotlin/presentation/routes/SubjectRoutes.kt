@@ -13,6 +13,7 @@ import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateSubjectRequest
+import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
 
 fun Route.subjectRoutes(
     getSubjectsUseCase: GetSubjectsUseCase,
@@ -54,7 +55,7 @@ fun Route.subjectRoutes(
             if (subjectId == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректный id предмета")
+                    message = ErrorResponse("Некорректный id предмета")
                 )
                 return@delete
             }
@@ -64,7 +65,7 @@ fun Route.subjectRoutes(
             if (!isDeleted) {
                 call.respond(
                     status = HttpStatusCode.NotFound,
-                    message = mapOf("error" to "Предмет не найден")
+                    message = ErrorResponse("Предмет не найден")
                 )
                 return@delete
             }
@@ -81,7 +82,7 @@ fun Route.subjectRoutes(
             if (subjectId == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    message = mapOf("error" to "Некорректный id предмета")
+                    message = ErrorResponse("Некорректный id предмета")
                 )
                 return@put
             }
@@ -97,7 +98,7 @@ fun Route.subjectRoutes(
             if (updatedSubject == null) {
                 call.respond(
                     status = HttpStatusCode.NotFound,
-                    message = mapOf("error" to "Предмет не найден")
+                    message = ErrorResponse("Предмет не найден")
                 )
                 return@put
             }
