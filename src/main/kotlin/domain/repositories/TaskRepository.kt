@@ -25,6 +25,8 @@ interface TaskRepository {
         type: TaskType
     ): Task
 
+    fun deleteTask(taskId: Int): Boolean
+
     fun updateTaskStatus(
         taskId: Int,
         status: TaskStatus

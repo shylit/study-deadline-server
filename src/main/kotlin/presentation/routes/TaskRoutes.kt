@@ -11,6 +11,7 @@ import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.DeleteTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
@@ -21,6 +22,7 @@ fun Route.taskRoutes(
     getTasksUseCase: GetTasksUseCase,
     createTaskUseCase: CreateTaskUseCase,
     searchTasksUseCase: SearchTasksUseCase,
+    deleteTaskUseCase: DeleteTaskUseCase,
     getTasksBySubjectUseCase: GetTasksBySubjectUseCase,
     updateTaskStatusUseCase: UpdateTaskStatusUseCase
 ) {
@@ -91,6 +93,33 @@ fun Route.taskRoutes(
             call.respond(
                 status = HttpStatusCode.Created,
                 message = task.toResponse()
+            )
+        }
+
+        delete("/{id}") {
+            val taskId = call.parameters["id"]?.toIntOrNull()
+
+            if (taskId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректный id задания")
+                )
+                return@delete
+            }
+
+            val isDeleted = deleteTaskUseCase(taskId)
+
+            if (!isDeleted) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = mapOf("error" to "Задание не найдено")
+                )
+                return@delete
+            }
+
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = mapOf("message" to "Задание удалено")
             )
         }
 

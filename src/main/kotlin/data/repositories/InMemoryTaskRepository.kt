@@ -91,6 +91,10 @@ class InMemoryTaskRepository : TaskRepository {
         }
     }
 
+    override fun deleteTask(taskId: Int): Boolean {
+        return tasks.removeIf { it.id == taskId }
+    }
+
     override fun updateTaskStatus(
         taskId: Int,
         status: TaskStatus
