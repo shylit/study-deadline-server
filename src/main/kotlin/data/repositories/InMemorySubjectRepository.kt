@@ -47,4 +47,8 @@ class InMemorySubjectRepository : SubjectRepository {
 
         return subject
     }
+
+    override fun deleteSubject(subjectId: Int): Boolean {
+        return subjects.removeIf { it.id == subjectId }
+    }
 }

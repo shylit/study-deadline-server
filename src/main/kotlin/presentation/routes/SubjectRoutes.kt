@@ -9,11 +9,13 @@ import ru.mirea.shylit.studydeadline.domain.usecases.CreateSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchSubjectsUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
+import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
 
 fun Route.subjectRoutes(
     getSubjectsUseCase: GetSubjectsUseCase,
     createSubjectUseCase: CreateSubjectUseCase,
+    deleteSubjectUseCase: DeleteSubjectUseCase,
     searchSubjectsUseCase: SearchSubjectsUseCase
 ) {
     route("/api/subjects") {
@@ -40,6 +42,33 @@ fun Route.subjectRoutes(
             call.respond(
                 status = HttpStatusCode.Created,
                 message = subject.toResponse()
+            )
+        }
+
+        delete("/{id}") {
+            val subjectId = call.parameters["id"]?.toIntOrNull()
+
+            if (subjectId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректный id предмета")
+                )
+                return@delete
+            }
+
+            val isDeleted = deleteSubjectUseCase(subjectId)
+
+            if (!isDeleted) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = mapOf("error" to "Предмет не найден")
+                )
+                return@delete
+            }
+
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = mapOf("message" to "Предмет удален")
             )
         }
     }

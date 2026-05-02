@@ -8,6 +8,7 @@ import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateSubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteTaskUseCase
@@ -31,6 +32,7 @@ fun Application.configureRouting() {
 
     val getSubjectsUseCase = GetSubjectsUseCase(subjectRepository)
     val createSubjectUseCase = CreateSubjectUseCase(subjectRepository)
+    val deleteSubjectUseCase = DeleteSubjectUseCase(subjectRepository)
     val searchSubjectsUseCase = SearchSubjectsUseCase(subjectRepository)
 
     val updateTaskStatusUseCase = UpdateTaskStatusUseCase(taskRepository)
@@ -49,7 +51,8 @@ fun Application.configureRouting() {
         subjectRoutes(
             getSubjectsUseCase = getSubjectsUseCase,
             createSubjectUseCase = createSubjectUseCase,
-            searchSubjectsUseCase = searchSubjectsUseCase
+            searchSubjectsUseCase = searchSubjectsUseCase,
+            deleteSubjectUseCase = deleteSubjectUseCase
         )
     }
 }
