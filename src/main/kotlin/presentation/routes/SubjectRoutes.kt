@@ -11,6 +11,7 @@ import ru.mirea.shylit.studydeadline.domain.usecases.SearchSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.ValidateSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateSubjectRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
@@ -20,7 +21,8 @@ fun Route.subjectRoutes(
     createSubjectUseCase: CreateSubjectUseCase,
     deleteSubjectUseCase: DeleteSubjectUseCase,
     searchSubjectsUseCase: SearchSubjectsUseCase,
-    updateSubjectUseCase: UpdateSubjectUseCase
+    updateSubjectUseCase: UpdateSubjectUseCase,
+    validateSubjectUseCase: ValidateSubjectUseCase
 ) {
     route("/api/subjects") {
         get {
@@ -37,6 +39,19 @@ fun Route.subjectRoutes(
 
         post {
             val request = call.receive<CreateSubjectRequest>()
+
+            val validationError = validateSubjectUseCase(
+                name = request.name,
+                description = request.description
+            )
+
+            if (validationError != null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse(validationError)
+                )
+                return@post
+            }
 
             val subject = createSubjectUseCase(
                 name = request.name,
@@ -88,6 +103,19 @@ fun Route.subjectRoutes(
             }
 
             val request = call.receive<UpdateSubjectRequest>()
+
+            val validationError = validateSubjectUseCase(
+                name = request.name,
+                description = request.description
+            )
+
+            if (validationError != null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse(validationError)
+                )
+                return@put
+            }
 
             val updatedSubject = updateSubjectUseCase(
                 subjectId = subjectId,

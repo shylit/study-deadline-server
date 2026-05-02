@@ -18,6 +18,7 @@ import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForTodayUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForWeekUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.ValidateTaskUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
@@ -33,7 +34,8 @@ fun Route.taskRoutes(
     getTasksForTodayUseCase: GetTasksForTodayUseCase,
     getTasksForWeekUseCase: GetTasksForWeekUseCase,
     getTasksBySubjectUseCase: GetTasksBySubjectUseCase,
-    updateTaskStatusUseCase: UpdateTaskStatusUseCase
+    updateTaskStatusUseCase: UpdateTaskStatusUseCase,
+    validateTaskUseCase: ValidateTaskUseCase
 ) {
     route("/api/tasks") {
         get {
@@ -101,6 +103,32 @@ fun Route.taskRoutes(
         post {
             val request = call.receive<CreateTaskRequest>()
 
+            val validationError = validateTaskUseCase(
+
+                title = request.title,
+
+                description = request.description,
+
+                subject = request.subject,
+
+                deadline = request.deadline
+
+            )
+
+            if (validationError != null) {
+
+                call.respond(
+
+                    status = HttpStatusCode.BadRequest,
+
+                    message = ErrorResponse(validationError)
+
+                )
+
+                return@post
+
+            }
+
             val priority = runCatching {
                 TaskPriority.valueOf(request.priority.uppercase())
             }.getOrDefault(TaskPriority.MEDIUM)
@@ -136,6 +164,32 @@ fun Route.taskRoutes(
             }
 
             val request = call.receive<UpdateTaskRequest>()
+
+            val validationError = validateTaskUseCase(
+
+                title = request.title,
+
+                description = request.description,
+
+                subject = request.subject,
+
+                deadline = request.deadline
+
+            )
+
+            if (validationError != null) {
+
+                call.respond(
+
+                    status = HttpStatusCode.BadRequest,
+
+                    message = ErrorResponse(validationError)
+
+                )
+
+                return@put
+
+            }
 
             val status = runCatching {
                 TaskStatus.valueOf(request.status.uppercase())

@@ -18,6 +18,8 @@ import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForTodayUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForWeekUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.ValidateTaskUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.ValidateSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.routes.healthRoutes
 import ru.mirea.shylit.studydeadline.presentation.routes.subjectRoutes
 import ru.mirea.shylit.studydeadline.presentation.routes.taskRoutes
@@ -34,6 +36,9 @@ fun Application.configureRouting() {
     val getTasksBySubjectUseCase = GetTasksBySubjectUseCase(taskRepository)
     val getTasksForTodayUseCase = GetTasksForTodayUseCase(taskRepository)
     val getTasksForWeekUseCase = GetTasksForWeekUseCase(taskRepository)
+
+    val validateTaskUseCase = ValidateTaskUseCase()
+    val validateSubjectUseCase = ValidateSubjectUseCase()
 
     val getSubjectsUseCase = GetSubjectsUseCase(subjectRepository)
     val createSubjectUseCase = CreateSubjectUseCase(subjectRepository)
@@ -54,14 +59,16 @@ fun Application.configureRouting() {
             getTasksBySubjectUseCase = getTasksBySubjectUseCase,
             updateTaskStatusUseCase = updateTaskStatusUseCase,
             getTasksForTodayUseCase = getTasksForTodayUseCase,
-            getTasksForWeekUseCase = getTasksForWeekUseCase
+            getTasksForWeekUseCase = getTasksForWeekUseCase,
+            validateTaskUseCase = validateTaskUseCase
         )
         subjectRoutes(
             getSubjectsUseCase = getSubjectsUseCase,
             createSubjectUseCase = createSubjectUseCase,
             searchSubjectsUseCase = searchSubjectsUseCase,
             deleteSubjectUseCase = deleteSubjectUseCase,
-            updateSubjectUseCase = updateSubjectUseCase
+            updateSubjectUseCase = updateSubjectUseCase,
+            validateSubjectUseCase = validateSubjectUseCase
         )
     }
 }
