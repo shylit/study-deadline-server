@@ -12,9 +12,11 @@ import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteTaskUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
+import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskStatusRequest
 
@@ -23,6 +25,7 @@ fun Route.taskRoutes(
     createTaskUseCase: CreateTaskUseCase,
     searchTasksUseCase: SearchTasksUseCase,
     deleteTaskUseCase: DeleteTaskUseCase,
+    updateTaskUseCase: UpdateTaskUseCase,
     getTasksBySubjectUseCase: GetTasksBySubjectUseCase,
     updateTaskStatusUseCase: UpdateTaskStatusUseCase
 ) {
@@ -94,6 +97,61 @@ fun Route.taskRoutes(
                 status = HttpStatusCode.Created,
                 message = task.toResponse()
             )
+        }
+
+        put("/{id}") {
+            val taskId = call.parameters["id"]?.toIntOrNull()
+
+            if (taskId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректный id задания")
+                )
+                return@put
+            }
+
+            val request = call.receive<UpdateTaskRequest>()
+
+            val status = runCatching {
+                TaskStatus.valueOf(request.status.uppercase())
+            }.getOrNull()
+
+            val priority = runCatching {
+                TaskPriority.valueOf(request.priority.uppercase())
+            }.getOrNull()
+
+            val type = runCatching {
+                TaskType.valueOf(request.type.uppercase())
+            }.getOrNull()
+
+            if (status == null || priority == null || type == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректные значения статуса, приоритета или типа задания")
+                )
+                return@put
+            }
+
+            val updatedTask = updateTaskUseCase(
+                taskId = taskId,
+                title = request.title,
+                description = request.description,
+                subject = request.subject,
+                deadline = request.deadline,
+                status = status,
+                priority = priority,
+                type = type
+            )
+
+            if (updatedTask == null) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = mapOf("error" to "Задание не найдено")
+                )
+                return@put
+            }
+
+            call.respond(updatedTask.toResponse())
         }
 
         delete("/{id}") {

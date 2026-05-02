@@ -95,6 +95,38 @@ class InMemoryTaskRepository : TaskRepository {
         return tasks.removeIf { it.id == taskId }
     }
 
+    override fun updateTask(
+        taskId: Int,
+        title: String,
+        description: String,
+        subject: String,
+        deadline: String,
+        status: TaskStatus,
+        priority: TaskPriority,
+        type: TaskType
+    ): Task? {
+        val taskIndex = tasks.indexOfFirst { it.id == taskId }
+
+        if (taskIndex == -1) {
+            return null
+        }
+
+        val updatedTask = Task(
+            id = taskId,
+            title = title,
+            description = description,
+            subject = subject,
+            deadline = deadline,
+            status = status,
+            priority = priority,
+            type = type
+        )
+
+        tasks[taskIndex] = updatedTask
+
+        return updatedTask
+    }
+
     override fun updateTaskStatus(
         taskId: Int,
         status: TaskStatus

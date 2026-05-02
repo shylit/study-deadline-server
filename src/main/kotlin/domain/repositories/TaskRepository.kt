@@ -27,6 +27,17 @@ interface TaskRepository {
 
     fun deleteTask(taskId: Int): Boolean
 
+    fun updateTask(
+        taskId: Int,
+        title: String,
+        description: String,
+        subject: String,
+        deadline: String,
+        status: TaskStatus,
+        priority: TaskPriority,
+        type: TaskType
+    ): Task?
+
     fun updateTaskStatus(
         taskId: Int,
         status: TaskStatus
