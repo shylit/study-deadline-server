@@ -42,4 +42,11 @@ interface TaskRepository {
         taskId: Int,
         status: TaskStatus
     ): Task?
+
+    fun getTasksForToday(today: String): List<Task>
+
+    fun getTasksForWeek(
+        startDate: String,
+        endDate: String
+    ): List<Task>
 }

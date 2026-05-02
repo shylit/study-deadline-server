@@ -146,4 +146,19 @@ class InMemoryTaskRepository : TaskRepository {
 
         return updatedTask
     }
+
+    override fun getTasksForToday(today: String): List<Task> {
+        return tasks.filter { task ->
+            task.deadline == today
+        }
+    }
+
+    override fun getTasksForWeek(
+        startDate: String,
+        endDate: String
+    ): List<Task> {
+        return tasks.filter { task ->
+            task.deadline in startDate..endDate
+        }
+    }
 }

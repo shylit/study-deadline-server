@@ -4,6 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.time.LocalDate
 import ru.mirea.shylit.studydeadline.domain.models.Task
 import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
 import ru.mirea.shylit.studydeadline.domain.models.TaskType
@@ -15,6 +16,8 @@ import ru.mirea.shylit.studydeadline.domain.usecases.DeleteTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForTodayUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForWeekUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
@@ -26,6 +29,8 @@ fun Route.taskRoutes(
     searchTasksUseCase: SearchTasksUseCase,
     deleteTaskUseCase: DeleteTaskUseCase,
     updateTaskUseCase: UpdateTaskUseCase,
+    getTasksForTodayUseCase: GetTasksForTodayUseCase,
+    getTasksForWeekUseCase: GetTasksForWeekUseCase,
     getTasksBySubjectUseCase: GetTasksBySubjectUseCase,
     updateTaskStatusUseCase: UpdateTaskStatusUseCase
 ) {
@@ -70,6 +75,25 @@ fun Route.taskRoutes(
             }
 
             val tasks = getTasksBySubjectUseCase(subject)
+            call.respond(tasks.map { it.toResponse() })
+        }
+
+        get("/today") {
+            val today = LocalDate.now().toString()
+            val tasks = getTasksForTodayUseCase(today)
+
+            call.respond(tasks.map { it.toResponse() })
+        }
+
+        get("/week") {
+            val startDate = LocalDate.now()
+            val endDate = startDate.plusDays(7)
+
+            val tasks = getTasksForWeekUseCase(
+                startDate = startDate.toString(),
+                endDate = endDate.toString()
+            )
+
             call.respond(tasks.map { it.toResponse() })
         }
 
