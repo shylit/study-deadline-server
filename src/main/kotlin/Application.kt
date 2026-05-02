@@ -7,6 +7,7 @@ import ru.mirea.shylit.studydeadline.app.plugins.configureRouting
 import ru.mirea.shylit.studydeadline.app.plugins.configureSerialization
 import ru.mirea.shylit.studydeadline.app.plugins.configureCors
 import ru.mirea.shylit.studydeadline.app.plugins.configureStatusPages
+import ru.mirea.shylit.studydeadline.data.database.DatabaseFactory
 
 fun main() {
     embeddedServer(
@@ -18,6 +19,9 @@ fun main() {
 }
 
 fun Application.module() {
+
+    DatabaseFactory.init()
+
     configureCors()
     configureSerialization()
     configureStatusPages()
