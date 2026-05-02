@@ -51,4 +51,26 @@ class InMemorySubjectRepository : SubjectRepository {
     override fun deleteSubject(subjectId: Int): Boolean {
         return subjects.removeIf { it.id == subjectId }
     }
+
+    override fun updateSubject(
+        subjectId: Int,
+        name: String,
+        description: String
+    ): Subject? {
+        val subjectIndex = subjects.indexOfFirst { it.id == subjectId }
+
+        if (subjectIndex == -1) {
+            return null
+        }
+
+        val updatedSubject = Subject(
+            id = subjectId,
+            name = name,
+            description = description
+        )
+
+        subjects[subjectIndex] = updatedSubject
+
+        return updatedSubject
+    }
 }

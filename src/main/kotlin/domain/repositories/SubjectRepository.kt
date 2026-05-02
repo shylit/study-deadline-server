@@ -13,4 +13,10 @@ interface SubjectRepository {
     ): Subject
 
     fun deleteSubject(subjectId: Int): Boolean
+
+    fun updateSubject(
+        subjectId: Int,
+        name: String,
+        description: String
+    ): Subject?
 }

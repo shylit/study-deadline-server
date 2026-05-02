@@ -8,15 +8,18 @@ import ru.mirea.shylit.studydeadline.domain.models.Subject
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchSubjectsUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.UpdateSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
+import ru.mirea.shylit.studydeadline.presentation.dto.UpdateSubjectRequest
 
 fun Route.subjectRoutes(
     getSubjectsUseCase: GetSubjectsUseCase,
     createSubjectUseCase: CreateSubjectUseCase,
     deleteSubjectUseCase: DeleteSubjectUseCase,
-    searchSubjectsUseCase: SearchSubjectsUseCase
+    searchSubjectsUseCase: SearchSubjectsUseCase,
+    updateSubjectUseCase: UpdateSubjectUseCase
 ) {
     route("/api/subjects") {
         get {
@@ -70,6 +73,36 @@ fun Route.subjectRoutes(
                 status = HttpStatusCode.OK,
                 message = mapOf("message" to "Предмет удален")
             )
+        }
+
+        put("/{id}") {
+            val subjectId = call.parameters["id"]?.toIntOrNull()
+
+            if (subjectId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = mapOf("error" to "Некорректный id предмета")
+                )
+                return@put
+            }
+
+            val request = call.receive<UpdateSubjectRequest>()
+
+            val updatedSubject = updateSubjectUseCase(
+                subjectId = subjectId,
+                name = request.name,
+                description = request.description
+            )
+
+            if (updatedSubject == null) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = mapOf("error" to "Предмет не найден")
+                )
+                return@put
+            }
+
+            call.respond(updatedSubject.toResponse())
         }
     }
 }
