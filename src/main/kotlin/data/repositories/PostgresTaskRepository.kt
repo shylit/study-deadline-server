@@ -106,12 +106,24 @@ class PostgresTaskRepository : TaskRepository {
         }
     }
 
-    override fun getTasksForToday(today: String): List<Task> = TODO()
+    override fun getTasksForToday(today: String): List<Task> {
+        return transaction {
+            getAllTasks().filter { task ->
+                task.deadline == today
+            }
+        }
+    }
 
     override fun getTasksForWeek(
         startDate: String,
         endDate: String
-    ): List<Task> = TODO()
+    ): List<Task> {
+        return transaction {
+            getAllTasks().filter { task ->
+                task.deadline in startDate..endDate
+            }
+        }
+    }
 
     override fun searchTasks(
         query: String?,
