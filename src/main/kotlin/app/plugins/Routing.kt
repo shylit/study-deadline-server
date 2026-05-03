@@ -5,6 +5,7 @@ import io.ktor.server.routing.*
 import ru.mirea.shylit.studydeadline.data.repositories.InMemorySubjectRepository
 import ru.mirea.shylit.studydeadline.data.repositories.InMemoryTaskRepository
 import ru.mirea.shylit.studydeadline.data.repositories.InMemoryUserRepository
+import ru.mirea.shylit.studydeadline.data.repositories.PostgresUserRepository
 import ru.mirea.shylit.studydeadline.data.repositories.PostgresTaskRepository
 import ru.mirea.shylit.studydeadline.data.repositories.PostgresSubjectRepository
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
@@ -57,7 +58,7 @@ fun Application.configureRouting() {
 
     val updateTaskStatusUseCase = UpdateTaskStatusUseCase(taskRepository)
 
-    val userRepository = InMemoryUserRepository()
+    val userRepository = PostgresUserRepository()
     val getCurrentUserUseCase = GetCurrentUserUseCase(userRepository)
 
     routing {
