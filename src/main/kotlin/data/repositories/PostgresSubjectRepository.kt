@@ -23,7 +23,21 @@ class PostgresSubjectRepository : SubjectRepository {
         }
     }
 
-    override fun getSubjectById(subjectId: Int): Subject? = TODO()
+    override fun getSubjectById(subjectId: Int): Subject? {
+        return transaction {
+            SubjectsTable
+                .selectAll()
+                .where { SubjectsTable.id eq subjectId }
+                .map { row ->
+                    Subject(
+                        id = row[SubjectsTable.id],
+                        name = row[SubjectsTable.name],
+                        description = row[SubjectsTable.description]
+                    )
+                }
+                .singleOrNull()
+        }
+    }
 
     override fun searchSubjects(query: String?): List<Subject> = TODO()
 
