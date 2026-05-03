@@ -1,0 +1,90 @@
+### Health check
+GET http://localhost:8080/health
+
+
+### Get current user
+GET http://localhost:8080/api/users/me
+
+
+### Get all subjects
+GET http://localhost:8080/api/subjects
+
+
+### Create subject
+POST http://localhost:8080/api/subjects
+Content-Type: application/json
+
+{
+  "name": "Ktor",
+  "description": "Разработка серверной части на Kotlin"
+}
+
+
+### Get all tasks
+GET http://localhost:8080/api/tasks
+
+
+### Create task
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Сделать серверную часть",
+  "description": "Реализовать REST API на Ktor",
+  "subject": "Ktor",
+  "deadline": "2026-06-10",
+  "priority": "HIGH",
+  "type": "COURSE_WORK"
+}
+
+
+### Search tasks
+GET http://localhost:8080/api/tasks?query=сервер
+
+
+### Filter tasks by status
+GET http://localhost:8080/api/tasks?status=PLANNED
+
+
+### Filter tasks by priority
+GET http://localhost:8080/api/tasks?priority=HIGH
+
+
+### Get tasks for today
+GET http://localhost:8080/api/tasks/today
+
+
+### Get tasks for week
+GET http://localhost:8080/api/tasks/week
+
+
+### Get tasks by subject
+GET http://localhost:8080/api/tasks/by-subject?subject=Ktor
+
+
+### Update task
+PUT http://localhost:8080/api/tasks/2
+Content-Type: application/json
+
+{
+  "title": "Обновить серверную часть",
+  "description": "Доработать PostgreSQL-репозитории",
+  "subject": "Ktor",
+  "deadline": "2026-06-20",
+  "status": "IN_PROGRESS",
+  "priority": "HIGH",
+  "type": "COURSE_WORK"
+}
+
+
+### Update task status
+PATCH http://localhost:8080/api/tasks/2/status
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+
+### Delete task
+DELETE http://localhost:8080/api/tasks/2
