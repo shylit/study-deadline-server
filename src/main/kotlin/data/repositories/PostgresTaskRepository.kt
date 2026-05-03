@@ -122,7 +122,42 @@ class PostgresTaskRepository : TaskRepository {
         status: TaskStatus,
         priority: TaskPriority,
         type: TaskType
-    ): Task? = TODO()
+    ): Task? {
+
+        return transaction {
+
+            val existingTask = TasksTable
+                .selectAll()
+                .where { TasksTable.id eq taskId }
+                .singleOrNull()
+
+            if (existingTask == null) {
+                return@transaction null
+            }
+
+            val userId = existingTask[TasksTable.userId]
+
+            val subjectId = getOrCreateSubject(
+                userId = userId,
+                subjectName = subject
+            )
+
+            TasksTable.update(
+                where = { TasksTable.id eq taskId }
+            ) { row ->
+
+                row[TasksTable.subjectId] = subjectId
+                row[TasksTable.title] = title
+                row[TasksTable.description] = description
+                row[TasksTable.deadline] = LocalDate.parse(deadline)
+                row[TasksTable.status] = status.name
+                row[TasksTable.priority] = priority.name
+                row[TasksTable.type] = type.name
+            }
+
+            getTaskById(taskId)
+        }
+    }
 
     override fun updateTaskStatus(
         taskId: Int,
