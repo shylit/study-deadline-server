@@ -6,6 +6,7 @@ import ru.mirea.shylit.studydeadline.data.repositories.InMemorySubjectRepository
 import ru.mirea.shylit.studydeadline.data.repositories.InMemoryTaskRepository
 import ru.mirea.shylit.studydeadline.data.repositories.InMemoryUserRepository
 import ru.mirea.shylit.studydeadline.data.repositories.PostgresTaskRepository
+import ru.mirea.shylit.studydeadline.data.repositories.PostgresSubjectRepository
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateSubjectUseCase
@@ -32,7 +33,7 @@ import ru.mirea.shylit.studydeadline.presentation.routes.userRoutes
 
 fun Application.configureRouting() {
     val taskRepository = PostgresTaskRepository()
-    val subjectRepository = InMemorySubjectRepository()
+    val subjectRepository = PostgresSubjectRepository()
 
     val getTasksUseCase = GetTasksUseCase(taskRepository)
     val createTaskUseCase = CreateTaskUseCase(taskRepository)
