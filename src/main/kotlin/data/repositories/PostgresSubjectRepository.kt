@@ -39,7 +39,19 @@ class PostgresSubjectRepository : SubjectRepository {
         }
     }
 
-    override fun searchSubjects(query: String?): List<Subject> = TODO()
+    override fun searchSubjects(query: String?): List<Subject> {
+        return transaction {
+
+            if (query.isNullOrBlank()) {
+                return@transaction getAllSubjects()
+            }
+
+            getAllSubjects().filter { subject ->
+                subject.name.contains(query, ignoreCase = true) ||
+                        subject.description.contains(query, ignoreCase = true)
+            }
+        }
+    }
 
     override fun createSubject(
         name: String,
