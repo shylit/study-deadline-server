@@ -74,7 +74,27 @@ class PostgresTaskRepository : TaskRepository {
         }
     }
 
-    override fun getTaskById(taskId: Int): Task? = TODO()
+    override fun getTaskById(taskId: Int): Task? {
+        return transaction {
+
+            TasksTable
+                .selectAll()
+                .where { TasksTable.id eq taskId }
+                .map { row ->
+                    Task(
+                        id = row[TasksTable.id],
+                        title = row[TasksTable.title],
+                        description = row[TasksTable.description],
+                        subject = getSubjectName(row[TasksTable.subjectId]),
+                        deadline = row[TasksTable.deadline].toString(),
+                        status = TaskStatus.valueOf(row[TasksTable.status]),
+                        priority = TaskPriority.valueOf(row[TasksTable.priority]),
+                        type = TaskType.valueOf(row[TasksTable.type])
+                    )
+                }
+                .singleOrNull()
+        }
+    }
 
     override fun getTasksBySubject(subject: String): List<Task> = TODO()
 

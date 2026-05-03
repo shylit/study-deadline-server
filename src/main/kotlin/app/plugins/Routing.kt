@@ -67,10 +67,10 @@ fun Application.configureRouting() {
             searchTasksUseCase = searchTasksUseCase,
             deleteTaskUseCase = deleteTaskUseCase,
             updateTaskUseCase = updateTaskUseCase,
-            getTasksBySubjectUseCase = getTasksBySubjectUseCase,
-            updateTaskStatusUseCase = updateTaskStatusUseCase,
             getTasksForTodayUseCase = getTasksForTodayUseCase,
             getTasksForWeekUseCase = getTasksForWeekUseCase,
+            getTasksBySubjectUseCase = getTasksBySubjectUseCase,
+            updateTaskStatusUseCase = updateTaskStatusUseCase,
             validateTaskUseCase = validateTaskUseCase,
             getTaskByIdUseCase = getTaskByIdUseCase
         )

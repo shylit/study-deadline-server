@@ -40,6 +40,7 @@ fun Route.taskRoutes(
     getTaskByIdUseCase: GetTaskByIdUseCase
 ) {
     route("/api/tasks") {
+
         get {
             val query = call.request.queryParameters["query"]
 
@@ -68,21 +69,6 @@ fun Route.taskRoutes(
             call.respond(tasks.map { it.toResponse() })
         }
 
-        get("/by-subject") {
-            val subject = call.request.queryParameters["subject"]
-
-            if (subject.isNullOrBlank()) {
-                call.respond(
-                    status = HttpStatusCode.BadRequest,
-                    message = ErrorResponse("Не указан параметр subject")
-                )
-                return@get
-            }
-
-            val tasks = getTasksBySubjectUseCase(subject)
-            call.respond(tasks.map { it.toResponse() })
-        }
-
         get("/today") {
             val today = LocalDate.now().toString()
             val tasks = getTasksForTodayUseCase(today)
@@ -99,6 +85,21 @@ fun Route.taskRoutes(
                 endDate = endDate.toString()
             )
 
+            call.respond(tasks.map { it.toResponse() })
+        }
+
+        get("/by-subject") {
+            val subject = call.request.queryParameters["subject"]
+
+            if (subject.isNullOrBlank()) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse("Не указан параметр subject")
+                )
+                return@get
+            }
+
+            val tasks = getTasksBySubjectUseCase(subject)
             call.respond(tasks.map { it.toResponse() })
         }
 
@@ -259,33 +260,6 @@ fun Route.taskRoutes(
             call.respond(updatedTask.toResponse())
         }
 
-        delete("/{id}") {
-            val taskId = call.parameters["id"]?.toIntOrNull()
-
-            if (taskId == null) {
-                call.respond(
-                    status = HttpStatusCode.BadRequest,
-                    message = ErrorResponse("Некорректный id задания")
-                )
-                return@delete
-            }
-
-            val isDeleted = deleteTaskUseCase(taskId)
-
-            if (!isDeleted) {
-                call.respond(
-                    status = HttpStatusCode.NotFound,
-                    message = ErrorResponse("Задание не найдено")
-                )
-                return@delete
-            }
-
-            call.respond(
-                status = HttpStatusCode.OK,
-                message = mapOf("message" to "Задание удалено")
-            )
-        }
-
         patch("/{id}/status") {
 
             val taskId = call.parameters["id"]?.toIntOrNull()
@@ -326,6 +300,33 @@ fun Route.taskRoutes(
             }
 
             call.respond(updatedTask.toResponse())
+        }
+
+        delete("/{id}") {
+            val taskId = call.parameters["id"]?.toIntOrNull()
+
+            if (taskId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse("Некорректный id задания")
+                )
+                return@delete
+            }
+
+            val isDeleted = deleteTaskUseCase(taskId)
+
+            if (!isDeleted) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = ErrorResponse("Задание не найдено")
+                )
+                return@delete
+            }
+
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = mapOf("message" to "Задание удалено")
+            )
         }
     }
 }
