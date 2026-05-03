@@ -2,9 +2,6 @@ package ru.mirea.shylit.studydeadline.app.plugins
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import ru.mirea.shylit.studydeadline.data.repositories.InMemorySubjectRepository
-import ru.mirea.shylit.studydeadline.data.repositories.InMemoryTaskRepository
-import ru.mirea.shylit.studydeadline.data.repositories.InMemoryUserRepository
 import ru.mirea.shylit.studydeadline.data.repositories.PostgresUserRepository
 import ru.mirea.shylit.studydeadline.data.repositories.PostgresTaskRepository
 import ru.mirea.shylit.studydeadline.data.repositories.PostgresSubjectRepository
