@@ -15,6 +15,7 @@ import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 import java.time.LocalDate
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 
 class PostgresTaskRepository : TaskRepository {
 
@@ -127,7 +128,15 @@ class PostgresTaskRepository : TaskRepository {
         status: TaskStatus
     ): Task? = TODO()
 
-    override fun deleteTask(taskId: Int): Boolean = TODO()
+    override fun deleteTask(taskId: Int): Boolean {
+        return transaction {
+            val deletedRows = TasksTable.deleteWhere {
+                TasksTable.id eq taskId
+            }
+
+            deletedRows > 0
+        }
+    }
 
     private fun getOrCreateDemoUser(): Int {
         val existingUser = UsersTable
