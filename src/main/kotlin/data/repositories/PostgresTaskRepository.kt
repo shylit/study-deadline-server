@@ -16,6 +16,7 @@ import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 import java.time.LocalDate
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.update
 
 class PostgresTaskRepository : TaskRepository {
 
@@ -126,7 +127,21 @@ class PostgresTaskRepository : TaskRepository {
     override fun updateTaskStatus(
         taskId: Int,
         status: TaskStatus
-    ): Task? = TODO()
+    ): Task? {
+        return transaction {
+            val updatedRows = TasksTable.update(
+                where = { TasksTable.id eq taskId }
+            ) { row ->
+                row[TasksTable.status] = status.name
+            }
+
+            if (updatedRows == 0) {
+                null
+            } else {
+                getTaskById(taskId)
+            }
+        }
+    }
 
     override fun deleteTask(taskId: Int): Boolean {
         return transaction {
@@ -140,11 +155,13 @@ class PostgresTaskRepository : TaskRepository {
 
     private fun getOrCreateDemoUser(): Int {
         val existingUser = UsersTable
-            .select ( UsersTable.firebaseUid eq "demo-firebase-uid" )
+            .selectAll()
+            .where { UsersTable.firebaseUid eq "demo-firebase-uid" }
+            .map { row -> row[UsersTable.id] }
             .singleOrNull()
 
         if (existingUser != null) {
-            return existingUser[UsersTable.id]
+            return existingUser
         }
 
         return UsersTable.insert { row ->
@@ -159,14 +176,16 @@ class PostgresTaskRepository : TaskRepository {
         subjectName: String
     ): Int {
         val existingSubject = SubjectsTable
-            .select (
+            .selectAll()
+            .where {
                 (SubjectsTable.userId eq userId) and
                         (SubjectsTable.name eq subjectName)
-            )
+            }
+            .map { row -> row[SubjectsTable.id] }
             .singleOrNull()
 
         if (existingSubject != null) {
-            return existingSubject[SubjectsTable.id]
+            return existingSubject
         }
 
         return SubjectsTable.insert { row ->
