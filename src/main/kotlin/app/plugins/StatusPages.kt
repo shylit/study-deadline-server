@@ -1,26 +1,35 @@
 package ru.mirea.shylit.studydeadline.app.plugins
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.response.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
 import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
 
 fun Application.configureStatusPages() {
+
     install(StatusPages) {
+
         exception<Throwable> { call, cause ->
-            call.application.environment.log.error("Unhandled error", cause)
+
+            cause.printStackTrace()
 
             call.respond(
                 status = HttpStatusCode.InternalServerError,
-                message = ErrorResponse("Внутренняя ошибка сервера")
+                message = ErrorResponse(
+                    message = "Внутренняя ошибка сервера"
+                )
             )
         }
 
-        status(HttpStatusCode.NotFound) { call, _ ->
+        status(HttpStatusCode.NotFound) { call, status ->
+
             call.respond(
-                status = HttpStatusCode.NotFound,
-                message = ErrorResponse("Маршрут не найден")
+                status = status,
+                message = ErrorResponse(
+                    message = "Маршрут не найден"
+                )
             )
         }
     }
