@@ -8,6 +8,7 @@ import ru.mirea.shylit.studydeadline.domain.repositories.SubjectRepository
 import org.jetbrains.exposed.v1.jdbc.insert
 import ru.mirea.shylit.studydeadline.data.tables.UsersTable
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.update
 
 class PostgresSubjectRepository : SubjectRepository {
 
@@ -78,7 +79,22 @@ class PostgresSubjectRepository : SubjectRepository {
         subjectId: Int,
         name: String,
         description: String
-    ): Subject? = TODO()
+    ): Subject? {
+        return transaction {
+            val updatedRows = SubjectsTable.update(
+                where = { SubjectsTable.id eq subjectId }
+            ) { row ->
+                row[SubjectsTable.name] = name
+                row[SubjectsTable.description] = description
+            }
+
+            if (updatedRows == 0) {
+                null
+            } else {
+                getSubjectById(subjectId)
+            }
+        }
+    }
 
     override fun deleteSubject(subjectId: Int): Boolean = TODO()
 
