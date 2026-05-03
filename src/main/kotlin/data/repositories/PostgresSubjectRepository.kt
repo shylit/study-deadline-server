@@ -9,6 +9,7 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import ru.mirea.shylit.studydeadline.data.tables.UsersTable
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.update
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 
 class PostgresSubjectRepository : SubjectRepository {
 
@@ -96,7 +97,15 @@ class PostgresSubjectRepository : SubjectRepository {
         }
     }
 
-    override fun deleteSubject(subjectId: Int): Boolean = TODO()
+    override fun deleteSubject(subjectId: Int): Boolean {
+        return transaction {
+            val deletedRows = SubjectsTable.deleteWhere {
+                SubjectsTable.id eq subjectId
+            }
+
+            deletedRows > 0
+        }
+    }
 
     private fun getOrCreateDemoUser(): Int {
         val existingUser = UsersTable
