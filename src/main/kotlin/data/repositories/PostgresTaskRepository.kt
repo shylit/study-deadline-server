@@ -98,7 +98,13 @@ class PostgresTaskRepository : TaskRepository {
         }
     }
 
-    override fun getTasksBySubject(subject: String): List<Task> = TODO()
+    override fun getTasksBySubject(subject: String): List<Task> {
+        return transaction {
+            getAllTasks().filter { task ->
+                task.subject.equals(subject, ignoreCase = true)
+            }
+        }
+    }
 
     override fun getTasksForToday(today: String): List<Task> = TODO()
 
