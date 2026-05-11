@@ -38,6 +38,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-java-time:${exposedVersion}")
     implementation("com.zaxxer:HikariCP:${hikariVersion}")
     implementation("org.postgresql:postgresql:${postgresVersion}")
+
+    implementation("com.google.firebase:firebase-admin:9.3.0")
 }
 
 application {
