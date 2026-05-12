@@ -9,6 +9,7 @@ class CreateTaskUseCase(
     private val taskRepository: TaskRepository
 ) {
     operator fun invoke(
+        firebaseUid: String,
         title: String,
         description: String,
         subject: String,
@@ -17,6 +18,7 @@ class CreateTaskUseCase(
         type: TaskType
     ): Task {
         return taskRepository.createTask(
+            firebaseUid = firebaseUid,
             title = title,
             description = description,
             subject = subject,

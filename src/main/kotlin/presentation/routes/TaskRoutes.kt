@@ -7,24 +7,25 @@ import io.ktor.server.routing.*
 import java.time.LocalDate
 import ru.mirea.shylit.studydeadline.domain.models.Task
 import ru.mirea.shylit.studydeadline.domain.models.TaskPriority
-import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
+import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateTaskUseCase
-import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
-import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.DeleteTaskUseCase
-import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTaskByIdUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksBySubjectUseCase
-import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForTodayUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksForWeekUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetTasksUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.SearchTasksUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskStatusUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.UpdateTaskUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateTaskUseCase
-import ru.mirea.shylit.studydeadline.domain.usecases.GetTaskByIdUseCase
+import ru.mirea.shylit.studydeadline.presentation.auth.getCurrentUserSession
 import ru.mirea.shylit.studydeadline.presentation.dto.CreateTaskRequest
-import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
-import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
-import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskStatusRequest
 import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
+import ru.mirea.shylit.studydeadline.presentation.dto.TaskResponse
+import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskRequest
+import ru.mirea.shylit.studydeadline.presentation.dto.UpdateTaskStatusRequest
 
 fun Route.taskRoutes(
     getTasksUseCase: GetTasksUseCase,
@@ -42,6 +43,8 @@ fun Route.taskRoutes(
     route("/api/tasks") {
 
         get {
+            val userSession = call.getCurrentUserSession()
+
             val query = call.request.queryParameters["query"]
 
             val status = call.request.queryParameters["status"]?.let { value ->
@@ -57,9 +60,10 @@ fun Route.taskRoutes(
             }
 
             val tasks = if (query.isNullOrBlank() && status == null && priority == null) {
-                getTasksUseCase()
+                getTasksUseCase(userSession.firebaseUid)
             } else {
                 searchTasksUseCase(
+                    firebaseUid = userSession.firebaseUid,
                     query = query,
                     status = status,
                     priority = priority
@@ -70,17 +74,24 @@ fun Route.taskRoutes(
         }
 
         get("/today") {
+            val userSession = call.getCurrentUserSession()
             val today = LocalDate.now().toString()
-            val tasks = getTasksForTodayUseCase(today)
+
+            val tasks = getTasksForTodayUseCase(
+                firebaseUid = userSession.firebaseUid,
+                today = today
+            )
 
             call.respond(tasks.map { it.toResponse() })
         }
 
         get("/week") {
+            val userSession = call.getCurrentUserSession()
             val startDate = LocalDate.now()
             val endDate = startDate.plusDays(7)
 
             val tasks = getTasksForWeekUseCase(
+                firebaseUid = userSession.firebaseUid,
                 startDate = startDate.toString(),
                 endDate = endDate.toString()
             )
@@ -89,6 +100,7 @@ fun Route.taskRoutes(
         }
 
         get("/by-subject") {
+            val userSession = call.getCurrentUserSession()
             val subject = call.request.queryParameters["subject"]
 
             if (subject.isNullOrBlank()) {
@@ -99,11 +111,16 @@ fun Route.taskRoutes(
                 return@get
             }
 
-            val tasks = getTasksBySubjectUseCase(subject)
+            val tasks = getTasksBySubjectUseCase(
+                firebaseUid = userSession.firebaseUid,
+                subject = subject
+            )
+
             call.respond(tasks.map { it.toResponse() })
         }
 
         get("/{id}") {
+            val userSession = call.getCurrentUserSession()
             val taskId = call.parameters["id"]?.toIntOrNull()
 
             if (taskId == null) {
@@ -114,7 +131,10 @@ fun Route.taskRoutes(
                 return@get
             }
 
-            val task = getTaskByIdUseCase(taskId)
+            val task = getTaskByIdUseCase(
+                firebaseUid = userSession.firebaseUid,
+                taskId = taskId
+            )
 
             if (task == null) {
                 call.respond(
@@ -128,32 +148,22 @@ fun Route.taskRoutes(
         }
 
         post {
+            val userSession = call.getCurrentUserSession()
             val request = call.receive<CreateTaskRequest>()
 
             val validationError = validateTaskUseCase(
-
                 title = request.title,
-
                 description = request.description,
-
                 subject = request.subject,
-
                 deadline = request.deadline
-
             )
 
             if (validationError != null) {
-
                 call.respond(
-
                     status = HttpStatusCode.BadRequest,
-
                     message = ErrorResponse(validationError)
-
                 )
-
                 return@post
-
             }
 
             val priority = runCatching {
@@ -165,6 +175,7 @@ fun Route.taskRoutes(
             }.getOrDefault(TaskType.OTHER)
 
             val task = createTaskUseCase(
+                firebaseUid = userSession.firebaseUid,
                 title = request.title,
                 description = request.description,
                 subject = request.subject,
@@ -180,6 +191,7 @@ fun Route.taskRoutes(
         }
 
         put("/{id}") {
+            val userSession = call.getCurrentUserSession()
             val taskId = call.parameters["id"]?.toIntOrNull()
 
             if (taskId == null) {
@@ -193,29 +205,18 @@ fun Route.taskRoutes(
             val request = call.receive<UpdateTaskRequest>()
 
             val validationError = validateTaskUseCase(
-
                 title = request.title,
-
                 description = request.description,
-
                 subject = request.subject,
-
                 deadline = request.deadline
-
             )
 
             if (validationError != null) {
-
                 call.respond(
-
                     status = HttpStatusCode.BadRequest,
-
                     message = ErrorResponse(validationError)
-
                 )
-
                 return@put
-
             }
 
             val status = runCatching {
@@ -239,6 +240,7 @@ fun Route.taskRoutes(
             }
 
             val updatedTask = updateTaskUseCase(
+                firebaseUid = userSession.firebaseUid,
                 taskId = taskId,
                 title = request.title,
                 description = request.description,
@@ -261,7 +263,7 @@ fun Route.taskRoutes(
         }
 
         patch("/{id}/status") {
-
+            val userSession = call.getCurrentUserSession()
             val taskId = call.parameters["id"]?.toIntOrNull()
 
             if (taskId == null) {
@@ -287,6 +289,7 @@ fun Route.taskRoutes(
             }
 
             val updatedTask = updateTaskStatusUseCase(
+                firebaseUid = userSession.firebaseUid,
                 taskId = taskId,
                 status = status
             )
@@ -303,6 +306,7 @@ fun Route.taskRoutes(
         }
 
         delete("/{id}") {
+            val userSession = call.getCurrentUserSession()
             val taskId = call.parameters["id"]?.toIntOrNull()
 
             if (taskId == null) {
@@ -313,7 +317,10 @@ fun Route.taskRoutes(
                 return@delete
             }
 
-            val isDeleted = deleteTaskUseCase(taskId)
+            val isDeleted = deleteTaskUseCase(
+                firebaseUid = userSession.firebaseUid,
+                taskId = taskId
+            )
 
             if (!isDeleted) {
                 call.respond(

@@ -7,10 +7,12 @@ class GetTasksForWeekUseCase(
     private val taskRepository: TaskRepository
 ) {
     operator fun invoke(
+        firebaseUid: String,
         startDate: String,
         endDate: String
     ): List<Task> {
         return taskRepository.getTasksForWeek(
+            firebaseUid = firebaseUid,
             startDate = startDate,
             endDate = endDate
         )

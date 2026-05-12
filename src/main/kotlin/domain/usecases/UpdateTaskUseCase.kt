@@ -10,6 +10,7 @@ class UpdateTaskUseCase(
     private val taskRepository: TaskRepository
 ) {
     operator fun invoke(
+        firebaseUid: String,
         taskId: Int,
         title: String,
         description: String,
@@ -20,6 +21,7 @@ class UpdateTaskUseCase(
         type: TaskType
     ): Task? {
         return taskRepository.updateTask(
+            firebaseUid = firebaseUid,
             taskId = taskId,
             title = title,
             description = description,

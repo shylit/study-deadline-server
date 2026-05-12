@@ -12,6 +12,8 @@ object FirebaseTokenVerifier {
                 FirebaseAuth.getInstance()
                     .verifyIdToken(token)
 
+            println("Firebase UID from token: ${decodedToken.uid}")
+
             UserSession(
                 firebaseUid = decodedToken.uid
             )

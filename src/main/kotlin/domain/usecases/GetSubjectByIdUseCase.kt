@@ -6,7 +6,13 @@ import ru.mirea.shylit.studydeadline.domain.repositories.SubjectRepository
 class GetSubjectByIdUseCase(
     private val subjectRepository: SubjectRepository
 ) {
-    operator fun invoke(subjectId: Int): Subject? {
-        return subjectRepository.getSubjectById(subjectId)
+    operator fun invoke(
+        firebaseUid: String,
+        subjectId: Int
+    ): Subject? {
+        return subjectRepository.getSubjectById(
+            firebaseUid = firebaseUid,
+            subjectId = subjectId
+        )
     }
 }

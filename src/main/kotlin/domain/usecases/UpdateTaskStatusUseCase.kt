@@ -8,10 +8,12 @@ class UpdateTaskStatusUseCase(
     private val taskRepository: TaskRepository
 ) {
     operator fun invoke(
+        firebaseUid: String,
         taskId: Int,
         status: TaskStatus
     ): Task? {
         return taskRepository.updateTaskStatus(
+            firebaseUid = firebaseUid,
             taskId = taskId,
             status = status
         )

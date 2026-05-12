@@ -6,7 +6,13 @@ import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 class GetTaskByIdUseCase(
     private val taskRepository: TaskRepository
 ) {
-    operator fun invoke(taskId: Int): Task? {
-        return taskRepository.getTaskById(taskId)
+    operator fun invoke(
+        firebaseUid: String,
+        taskId: Int
+    ): Task? {
+        return taskRepository.getTaskById(
+            firebaseUid = firebaseUid,
+            taskId = taskId
+        )
     }
 }

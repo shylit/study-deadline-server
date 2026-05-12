@@ -6,7 +6,7 @@ import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 class GetTasksUseCase(
     private val taskRepository: TaskRepository
 ) {
-    operator fun invoke(): List<Task> {
-        return taskRepository.getAllTasks()
+    operator fun invoke(firebaseUid: String): List<Task> {
+        return taskRepository.getAllTasks(firebaseUid)
     }
 }

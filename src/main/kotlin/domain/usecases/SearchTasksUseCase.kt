@@ -9,11 +9,13 @@ class SearchTasksUseCase(
     private val taskRepository: TaskRepository
 ) {
     operator fun invoke(
+        firebaseUid: String,
         query: String?,
         status: TaskStatus?,
         priority: TaskPriority?
     ): List<Task> {
         return taskRepository.searchTasks(
+            firebaseUid = firebaseUid,
             query = query,
             status = status,
             priority = priority

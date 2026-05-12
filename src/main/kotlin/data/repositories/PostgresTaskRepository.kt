@@ -1,10 +1,12 @@
 package ru.mirea.shylit.studydeadline.data.repositories
 
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import ru.mirea.shylit.studydeadline.data.tables.SubjectsTable
 import ru.mirea.shylit.studydeadline.data.tables.TasksTable
 import ru.mirea.shylit.studydeadline.data.tables.UsersTable
@@ -14,30 +16,117 @@ import ru.mirea.shylit.studydeadline.domain.models.TaskStatus
 import ru.mirea.shylit.studydeadline.domain.models.TaskType
 import ru.mirea.shylit.studydeadline.domain.repositories.TaskRepository
 import java.time.LocalDate
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
-import org.jetbrains.exposed.v1.jdbc.update
 
 class PostgresTaskRepository : TaskRepository {
 
-    override fun getAllTasks(): List<Task> {
+    override fun getAllTasks(firebaseUid: String): List<Task> {
         return transaction {
-            TasksTable.selectAll().map { row ->
-                Task(
-                    id = row[TasksTable.id],
-                    title = row[TasksTable.title],
-                    description = row[TasksTable.description],
-                    subject = getSubjectName(row[TasksTable.subjectId]),
-                    deadline = row[TasksTable.deadline].toString(),
-                    status = TaskStatus.valueOf(row[TasksTable.status]),
-                    priority = TaskPriority.valueOf(row[TasksTable.priority]),
-                    type = TaskType.valueOf(row[TasksTable.type])
-                )
+            val userId = getOrCreateUser(firebaseUid)
+
+            TasksTable
+                .selectAll()
+                .where { TasksTable.userId eq userId }
+                .map { row ->
+                    Task(
+                        id = row[TasksTable.id],
+                        title = row[TasksTable.title],
+                        description = row[TasksTable.description],
+                        subject = getSubjectName(row[TasksTable.subjectId]),
+                        deadline = row[TasksTable.deadline].toString(),
+                        status = TaskStatus.valueOf(row[TasksTable.status]),
+                        priority = TaskPriority.valueOf(row[TasksTable.priority]),
+                        type = TaskType.valueOf(row[TasksTable.type])
+                    )
+                }
+        }
+    }
+
+    override fun getTaskById(
+        firebaseUid: String,
+        taskId: Int
+    ): Task? {
+        return transaction {
+            val userId = getOrCreateUser(firebaseUid)
+
+            TasksTable
+                .selectAll()
+                .where {
+                    (TasksTable.id eq taskId) and
+                            (TasksTable.userId eq userId)
+                }
+                .map { row ->
+                    Task(
+                        id = row[TasksTable.id],
+                        title = row[TasksTable.title],
+                        description = row[TasksTable.description],
+                        subject = getSubjectName(row[TasksTable.subjectId]),
+                        deadline = row[TasksTable.deadline].toString(),
+                        status = TaskStatus.valueOf(row[TasksTable.status]),
+                        priority = TaskPriority.valueOf(row[TasksTable.priority]),
+                        type = TaskType.valueOf(row[TasksTable.type])
+                    )
+                }
+                .singleOrNull()
+        }
+    }
+
+    override fun getTasksBySubject(
+        firebaseUid: String,
+        subject: String
+    ): List<Task> {
+        return transaction {
+            getAllTasks(firebaseUid).filter { task ->
+                task.subject.equals(subject, ignoreCase = true)
+            }
+        }
+    }
+
+    override fun getTasksForToday(
+        firebaseUid: String,
+        today: String
+    ): List<Task> {
+        return transaction {
+            getAllTasks(firebaseUid).filter { task ->
+                task.deadline == today
+            }
+        }
+    }
+
+    override fun getTasksForWeek(
+        firebaseUid: String,
+        startDate: String,
+        endDate: String
+    ): List<Task> {
+        return transaction {
+            getAllTasks(firebaseUid).filter { task ->
+                task.deadline in startDate..endDate
+            }
+        }
+    }
+
+    override fun searchTasks(
+        firebaseUid: String,
+        query: String?,
+        status: TaskStatus?,
+        priority: TaskPriority?
+    ): List<Task> {
+        return transaction {
+            getAllTasks(firebaseUid).filter { task ->
+                val matchesQuery = query.isNullOrBlank() ||
+                        task.title.contains(query, ignoreCase = true) ||
+                        task.description.contains(query, ignoreCase = true) ||
+                        task.subject.contains(query, ignoreCase = true)
+
+                val matchesStatus = status == null || task.status == status
+                val matchesPriority = priority == null || task.priority == priority
+
+                matchesQuery && matchesStatus && matchesPriority
             }
         }
     }
 
     override fun createTask(
+        firebaseUid: String,
         title: String,
         description: String,
         subject: String,
@@ -46,7 +135,8 @@ class PostgresTaskRepository : TaskRepository {
         type: TaskType
     ): Task {
         return transaction {
-            val userId = getOrCreateDemoUser()
+            val userId = getOrCreateUser(firebaseUid)
+
             val subjectId = getOrCreateSubject(
                 userId = userId,
                 subjectName = subject
@@ -76,76 +166,8 @@ class PostgresTaskRepository : TaskRepository {
         }
     }
 
-    override fun getTaskById(taskId: Int): Task? {
-        return transaction {
-
-            TasksTable
-                .selectAll()
-                .where { TasksTable.id eq taskId }
-                .map { row ->
-                    Task(
-                        id = row[TasksTable.id],
-                        title = row[TasksTable.title],
-                        description = row[TasksTable.description],
-                        subject = getSubjectName(row[TasksTable.subjectId]),
-                        deadline = row[TasksTable.deadline].toString(),
-                        status = TaskStatus.valueOf(row[TasksTable.status]),
-                        priority = TaskPriority.valueOf(row[TasksTable.priority]),
-                        type = TaskType.valueOf(row[TasksTable.type])
-                    )
-                }
-                .singleOrNull()
-        }
-    }
-
-    override fun getTasksBySubject(subject: String): List<Task> {
-        return transaction {
-            getAllTasks().filter { task ->
-                task.subject.equals(subject, ignoreCase = true)
-            }
-        }
-    }
-
-    override fun getTasksForToday(today: String): List<Task> {
-        return transaction {
-            getAllTasks().filter { task ->
-                task.deadline == today
-            }
-        }
-    }
-
-    override fun getTasksForWeek(
-        startDate: String,
-        endDate: String
-    ): List<Task> {
-        return transaction {
-            getAllTasks().filter { task ->
-                task.deadline in startDate..endDate
-            }
-        }
-    }
-
-    override fun searchTasks(
-        query: String?,
-        status: TaskStatus?,
-        priority: TaskPriority?
-    ): List<Task> {
-        return transaction {
-            getAllTasks().filter { task ->
-                val matchesQuery = query.isNullOrBlank() ||
-                        task.title.contains(query, ignoreCase = true) ||
-                        task.description.contains(query, ignoreCase = true) ||
-                        task.subject.contains(query, ignoreCase = true)
-
-                val matchesStatus = status == null || task.status == status
-                val matchesPriority = priority == null || task.priority == priority
-
-                matchesQuery && matchesStatus && matchesPriority
-            }
-        }
-    }
-
     override fun updateTask(
+        firebaseUid: String,
         taskId: Int,
         title: String,
         description: String,
@@ -155,19 +177,20 @@ class PostgresTaskRepository : TaskRepository {
         priority: TaskPriority,
         type: TaskType
     ): Task? {
-
         return transaction {
+            val userId = getOrCreateUser(firebaseUid)
 
             val existingTask = TasksTable
                 .selectAll()
-                .where { TasksTable.id eq taskId }
+                .where {
+                    (TasksTable.id eq taskId) and
+                            (TasksTable.userId eq userId)
+                }
                 .singleOrNull()
 
             if (existingTask == null) {
                 return@transaction null
             }
-
-            val userId = existingTask[TasksTable.userId]
 
             val subjectId = getOrCreateSubject(
                 userId = userId,
@@ -175,9 +198,11 @@ class PostgresTaskRepository : TaskRepository {
             )
 
             TasksTable.update(
-                where = { TasksTable.id eq taskId }
+                where = {
+                    (TasksTable.id eq taskId) and
+                            (TasksTable.userId eq userId)
+                }
             ) { row ->
-
                 row[TasksTable.subjectId] = subjectId
                 row[TasksTable.title] = title
                 row[TasksTable.description] = description
@@ -187,17 +212,26 @@ class PostgresTaskRepository : TaskRepository {
                 row[TasksTable.type] = type.name
             }
 
-            getTaskById(taskId)
+            getTaskById(
+                firebaseUid = firebaseUid,
+                taskId = taskId
+            )
         }
     }
 
     override fun updateTaskStatus(
+        firebaseUid: String,
         taskId: Int,
         status: TaskStatus
     ): Task? {
         return transaction {
+            val userId = getOrCreateUser(firebaseUid)
+
             val updatedRows = TasksTable.update(
-                where = { TasksTable.id eq taskId }
+                where = {
+                    (TasksTable.id eq taskId) and
+                            (TasksTable.userId eq userId)
+                }
             ) { row ->
                 row[TasksTable.status] = status.name
             }
@@ -205,25 +239,34 @@ class PostgresTaskRepository : TaskRepository {
             if (updatedRows == 0) {
                 null
             } else {
-                getTaskById(taskId)
+                getTaskById(
+                    firebaseUid = firebaseUid,
+                    taskId = taskId
+                )
             }
         }
     }
 
-    override fun deleteTask(taskId: Int): Boolean {
+    override fun deleteTask(
+        firebaseUid: String,
+        taskId: Int
+    ): Boolean {
         return transaction {
+            val userId = getOrCreateUser(firebaseUid)
+
             val deletedRows = TasksTable.deleteWhere {
-                TasksTable.id eq taskId
+                (TasksTable.id eq taskId) and
+                        (TasksTable.userId eq userId)
             }
 
             deletedRows > 0
         }
     }
 
-    private fun getOrCreateDemoUser(): Int {
+    private fun getOrCreateUser(firebaseUid: String): Int {
         val existingUser = UsersTable
             .selectAll()
-            .where { UsersTable.firebaseUid eq "demo-firebase-uid" }
+            .where { UsersTable.firebaseUid eq firebaseUid }
             .map { row -> row[UsersTable.id] }
             .singleOrNull()
 
@@ -232,9 +275,9 @@ class PostgresTaskRepository : TaskRepository {
         }
 
         return UsersTable.insert { row ->
-            row[firebaseUid] = "demo-firebase-uid"
-            row[email] = "student@example.com"
-            row[name] = "Студент"
+            row[UsersTable.firebaseUid] = firebaseUid
+            row[UsersTable.email] = "unknown@example.com"
+            row[UsersTable.name] = "Пользователь"
         } get UsersTable.id
     }
 
@@ -257,8 +300,8 @@ class PostgresTaskRepository : TaskRepository {
 
         return SubjectsTable.insert { row ->
             row[SubjectsTable.userId] = userId
-            row[name] = subjectName
-            row[description] = "Предмет создан автоматически при добавлении задания"
+            row[SubjectsTable.name] = subjectName
+            row[SubjectsTable.description] = "Предмет создан автоматически при добавлении задания"
         } get SubjectsTable.id
     }
 

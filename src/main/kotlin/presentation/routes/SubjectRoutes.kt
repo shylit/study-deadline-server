@@ -6,40 +6,47 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ru.mirea.shylit.studydeadline.domain.models.Subject
 import ru.mirea.shylit.studydeadline.domain.usecases.CreateSubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
+import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectByIdUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.SearchSubjectsUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.UpdateSubjectUseCase
-import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
-import ru.mirea.shylit.studydeadline.domain.usecases.DeleteSubjectUseCase
 import ru.mirea.shylit.studydeadline.domain.usecases.ValidateSubjectUseCase
-import ru.mirea.shylit.studydeadline.domain.usecases.GetSubjectByIdUseCase
+import ru.mirea.shylit.studydeadline.presentation.auth.getCurrentUserSession
+import ru.mirea.shylit.studydeadline.presentation.dto.CreateSubjectRequest
+import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.SubjectResponse
 import ru.mirea.shylit.studydeadline.presentation.dto.UpdateSubjectRequest
-import ru.mirea.shylit.studydeadline.presentation.dto.ErrorResponse
 
 fun Route.subjectRoutes(
     getSubjectsUseCase: GetSubjectsUseCase,
     createSubjectUseCase: CreateSubjectUseCase,
-    deleteSubjectUseCase: DeleteSubjectUseCase,
     searchSubjectsUseCase: SearchSubjectsUseCase,
+    deleteSubjectUseCase: DeleteSubjectUseCase,
     updateSubjectUseCase: UpdateSubjectUseCase,
     validateSubjectUseCase: ValidateSubjectUseCase,
     getSubjectByIdUseCase: GetSubjectByIdUseCase
 ) {
     route("/api/subjects") {
+
         get {
+            val userSession = call.getCurrentUserSession()
             val query = call.request.queryParameters["query"]
 
             val subjects = if (query.isNullOrBlank()) {
-                getSubjectsUseCase()
+                getSubjectsUseCase(userSession.firebaseUid)
             } else {
-                searchSubjectsUseCase(query)
+                searchSubjectsUseCase(
+                    firebaseUid = userSession.firebaseUid,
+                    query = query
+                )
             }
 
             call.respond(subjects.map { it.toResponse() })
         }
 
         get("/{id}") {
+            val userSession = call.getCurrentUserSession()
             val subjectId = call.parameters["id"]?.toIntOrNull()
 
             if (subjectId == null) {
@@ -50,7 +57,10 @@ fun Route.subjectRoutes(
                 return@get
             }
 
-            val subject = getSubjectByIdUseCase(subjectId)
+            val subject = getSubjectByIdUseCase(
+                firebaseUid = userSession.firebaseUid,
+                subjectId = subjectId
+            )
 
             if (subject == null) {
                 call.respond(
@@ -64,6 +74,7 @@ fun Route.subjectRoutes(
         }
 
         post {
+            val userSession = call.getCurrentUserSession()
             val request = call.receive<CreateSubjectRequest>()
 
             val validationError = validateSubjectUseCase(
@@ -80,6 +91,7 @@ fun Route.subjectRoutes(
             }
 
             val subject = createSubjectUseCase(
+                firebaseUid = userSession.firebaseUid,
                 name = request.name,
                 description = request.description
             )
@@ -90,34 +102,8 @@ fun Route.subjectRoutes(
             )
         }
 
-        delete("/{id}") {
-            val subjectId = call.parameters["id"]?.toIntOrNull()
-
-            if (subjectId == null) {
-                call.respond(
-                    status = HttpStatusCode.BadRequest,
-                    message = ErrorResponse("Некорректный id предмета")
-                )
-                return@delete
-            }
-
-            val isDeleted = deleteSubjectUseCase(subjectId)
-
-            if (!isDeleted) {
-                call.respond(
-                    status = HttpStatusCode.NotFound,
-                    message = ErrorResponse("Предмет не найден")
-                )
-                return@delete
-            }
-
-            call.respond(
-                status = HttpStatusCode.OK,
-                message = mapOf("message" to "Предмет удален")
-            )
-        }
-
         put("/{id}") {
+            val userSession = call.getCurrentUserSession()
             val subjectId = call.parameters["id"]?.toIntOrNull()
 
             if (subjectId == null) {
@@ -144,6 +130,7 @@ fun Route.subjectRoutes(
             }
 
             val updatedSubject = updateSubjectUseCase(
+                firebaseUid = userSession.firebaseUid,
                 subjectId = subjectId,
                 name = request.name,
                 description = request.description
@@ -158,6 +145,37 @@ fun Route.subjectRoutes(
             }
 
             call.respond(updatedSubject.toResponse())
+        }
+
+        delete("/{id}") {
+            val userSession = call.getCurrentUserSession()
+            val subjectId = call.parameters["id"]?.toIntOrNull()
+
+            if (subjectId == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = ErrorResponse("Некорректный id предмета")
+                )
+                return@delete
+            }
+
+            val isDeleted = deleteSubjectUseCase(
+                firebaseUid = userSession.firebaseUid,
+                subjectId = subjectId
+            )
+
+            if (!isDeleted) {
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = ErrorResponse("Предмет не найден")
+                )
+                return@delete
+            }
+
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = mapOf("message" to "Предмет удален")
+            )
         }
     }
 }
